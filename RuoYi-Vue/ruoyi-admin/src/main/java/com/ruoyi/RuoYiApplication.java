@@ -28,3 +28,5 @@ public class RuoYiApplication
                 " ''-'   `'-'    `-..-'              ");
     }
 }
+//启动程序
+
