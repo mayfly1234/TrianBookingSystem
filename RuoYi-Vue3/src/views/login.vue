@@ -57,10 +57,6 @@
         </div>
       </el-form-item>
     </el-form>
-    <!--  底部  -->
-    <div class="el-login-footer">
-      <span>Copyright © 2018-2023 ruoyi.vip All Rights Reserved.</span>
-    </div>
   </div>
 </template>
 
@@ -165,11 +161,14 @@ getCookie();
 <style lang='scss' scoped>
 .login {
   display: flex;
-  justify-content: center;
+  /* 核心修改1：将水平居中改为靠右侧对齐 */
+  justify-content: flex-end;
   align-items: center;
   height: 100%;
   background-image: url("../assets/images/login-background.jpg");
   background-size: cover;
+  /* 核心修改2：控制登录窗口与右侧边缘的距离，可按需调整数值（比如改为100px/300px） */
+  padding-right: 200px;
 }
 .title {
   margin: 0px auto 30px auto;
