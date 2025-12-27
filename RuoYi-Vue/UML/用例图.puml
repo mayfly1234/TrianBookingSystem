@@ -1,0 +1,70 @@
+@startuml 火车订票系统用例图（精简版）
+' 样式优化：适配中文显示+简洁风格
+skinparam actor {
+  Background #f9f9f9
+  BorderColor #2E4057
+  FontSize 12
+  FontName "Microsoft YaHei"
+}
+skinparam usecase {
+  Background #e8f4f8
+  BorderColor #3182CE
+  FontSize 11
+  FontName "Microsoft YaHei"
+}
+skinparam package {
+  Background #f0f8fb
+  BorderColor #2B6CB0
+  FontName "Microsoft YaHei"
+}
+
+' 定义执行者
+actor "普通用户" as NormalUser
+actor "客服员工" as CustomerService
+actor "管理员" as Admin
+
+' 普通用户用例（完全匹配你的设计）
+package "普通用户功能" {
+  (查看公告) as ViewAnnouncement
+  (车票预订) as BookTicket
+  (订单查询) as QueryOrder
+  (火车退票) as RefundTicket
+  (行程规划) as PlanTrip
+}
+
+' 客服员工用例（完全匹配你的设计，标注辅助属性）
+package "客服员工功能" {
+  (查看公告) as CS_ViewAnnouncement
+  (车票预订«辅助») as CS_BookTicket
+  (订单查询«辅助») as CS_QueryOrder
+  (火车退票«辅助») as CS_RefundTicket
+}
+
+' 管理员用例（优化：发布公告→管理公告，补充查看公告）
+package "管理员功能" {
+  (系统参数配置) as ConfigureSystem
+  (管理公告) as ManageAnnouncement
+  (管理用户) as ManageUser
+  (查看公告) as Admin_ViewAnnouncement
+}
+
+' 普通用户关联（完全匹配你的设计）
+NormalUser -- ViewAnnouncement
+NormalUser -- BookTicket
+NormalUser -- QueryOrder
+NormalUser -- RefundTicket
+NormalUser -- PlanTrip
+
+' 客服员工关联（完全匹配你的设计）
+CustomerService -- CS_ViewAnnouncement
+CustomerService -- CS_BookTicket
+CustomerService -- CS_QueryOrder
+CustomerService -- CS_RefundTicket
+
+' 管理员关联（优化后）
+Admin -- ConfigureSystem
+Admin -- ManageAnnouncement
+Admin -- ManageUser
+Admin -- Admin_ViewAnnouncement
+
+@enduml
