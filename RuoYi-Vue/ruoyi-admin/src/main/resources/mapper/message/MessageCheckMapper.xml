@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 修正namespace为实际Mapper接口路径 -->
+<mapper namespace="com.ruoyi.message.mapper.MessageCheckMapper">
+
+    <!-- 修正resultMap的type为实际Domain类路径 -->
+    <resultMap type="com.ruoyi.message.domain.MessageCheck" id="MessageCheckResult">
+        <result property="infoId"    column="info_id"    />
+        <result property="infoContent"    column="info_content"    />
+        <result property="publishTime"    column="publish_time"    />
+    </resultMap>
+
+    <sql id="selectMessageCheckVo">
+        select info_id, info_content, publish_time from message_info
+    </sql>
+
+    <select id="selectMessageCheckList" parameterType="com.ruoyi.message.domain.MessageCheck" resultMap="MessageCheckResult">
+        <include refid="selectMessageCheckVo"/>
+        <where>
+            <if test="infoContent != null and infoContent != ''">
+                and info_content like concat('%', #{infoContent}, '%')
+            </if>
+        </where>
+        order by publish_time desc
+    </select>
+
+    <select id="selectMessageCheckById" parameterType="String" resultMap="MessageCheckResult">
+        <include refid="selectMessageCheckVo"/>
+        where info_id = #{infoId}
+    </select>
+</mapper>
