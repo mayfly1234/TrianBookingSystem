@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.info.mapper.MessageInfoMapper">
+    
+    <resultMap type="MessageInfo" id="MessageInfoResult">
+        <result property="infoId"    column="info_id"    />
+        <result property="infoContent"    column="info_content"    />
+        <result property="publishTime"    column="publish_time"    />
+    </resultMap>
+
+    <sql id="selectMessageInfoVo">
+        select info_id, info_content, publish_time from message_info
+    </sql>
+
+    <select id="selectMessageInfoList" parameterType="MessageInfo" resultMap="MessageInfoResult">
+        <include refid="selectMessageInfoVo"/>
+        <where>  
+            <if test="infoContent != null  and infoContent != ''"> and info_content like concat('%', #{infoContent}, '%')</if>
+            <if test="publishTime != null "> and publish_time = #{publishTime}</if>
+        </where>
+    </select>
+    
+    <select id="selectMessageInfoByInfoId" parameterType="String" resultMap="MessageInfoResult">
+        <include refid="selectMessageInfoVo"/>
+        where info_id = #{infoId}
+    </select>
+
+    <insert id="insertMessageInfo" parameterType="MessageInfo" useGeneratedKeys="true" keyProperty="infoId">
+        insert into message_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="infoContent != null and infoContent != ''">info_content,</if>
+            <if test="publishTime != null">publish_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="infoContent != null and infoContent != ''">#{infoContent},</if>
+            <if test="publishTime != null">#{publishTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateMessageInfo" parameterType="MessageInfo">
+        update message_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="infoContent != null and infoContent != ''">info_content = #{infoContent},</if>
+            <if test="publishTime != null">publish_time = #{publishTime},</if>
+        </trim>
+        where info_id = #{infoId}
+    </update>
+
+    <delete id="deleteMessageInfoByInfoId" parameterType="String">
+        delete from message_info where info_id = #{infoId}
+    </delete>
+
+    <delete id="deleteMessageInfoByInfoIds" parameterType="String">
+        delete from message_info where info_id in 
+        <foreach item="infoId" collection="array" open="(" separator="," close=")">
+            #{infoId}
+        </foreach>
+    </delete>
+</mapper>
