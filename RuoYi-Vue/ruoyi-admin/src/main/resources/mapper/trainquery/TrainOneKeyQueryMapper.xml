@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.trainquery.mapper.TrainOneKeyQueryMapper">
+
+    <!-- 1. 车次查询：新增总里程totalMileage字段 -->
+    <select id="selectTrainByCondition" resultType="com.ruoyi.trainquery.domain.vo.TrainOneKeyVO">
+        SELECT
+        TRIM(COALESCE(tb.train_no, ts.train_no)) AS trainNo,
+        TRIM(CASE COALESCE(tb.train_type, '99')
+        WHEN '0' THEN '高铁' WHEN '1' THEN '动车' WHEN '2' THEN '普快' ELSE '其他' END) AS trainType,
+        TRIM(ts.start_station) AS startStation,
+        TRIM(ts.end_station) AS endStation,
+        DATE_FORMAT(ts.depart_date, '%Y-%m-%d') AS departDate,
+        COALESCE((SELECT DATE_FORMAT(tss.depart_time, '%H:%i:%s')
+        FROM train_schedule_station tss
+        WHERE tss.schedule_id = ts.schedule_id AND tss.station_order = 1), '') AS startTime,
+        COALESCE((SELECT DATE_FORMAT(tss.arrive_time, '%H:%i:%s')
+        FROM train_schedule_station tss
+        WHERE tss.schedule_id = ts.schedule_id
+        AND tss.station_order = (SELECT MAX(station_order)
+        FROM train_schedule_station
+        WHERE schedule_id = ts.schedule_id)), '') AS arriveTime,
+        TRIM(COALESCE(ts.total_duration, '')) AS totalDuration,
+        -- 新增：查询该车次的总里程（终点站的累计里程）
+        (SELECT COALESCE(MAX(cumulative_mileage), 0)
+        FROM train_schedule_station
+        WHERE schedule_id = ts.schedule_id) AS totalMileage
+        FROM train_schedule ts
+        LEFT JOIN train_basic tb ON ts.train_no = tb.train_no
+        WHERE ts.status = '0'
+        <if test="startStation != null and startStation != ''">
+            AND TRIM(ts.start_station) = TRIM(#{startStation})
+        </if>
+        <if test="endStation != null and endStation != ''">
+            AND TRIM(ts.end_station) = TRIM(#{endStation})
+        </if>
+        <if test="departDate != null and departDate != ''">
+            AND DATE_FORMAT(ts.depart_date, '%Y-%m-%d') = TRIM(#{departDate})
+        </if>
+        ORDER BY ts.depart_date ASC, startTime ASC
+    </select>
+
+    <!-- 2. 座位查询：新增票价计算（总里程×系数） -->
+    <select id="selectSeatByScheduleId" resultType="com.ruoyi.trainquery.domain.vo.SeatVO">
+        -- 先查询该车次的总里程
+        SELECT
+            TRIM(CASE tc.carriage_type
+                     WHEN '0' THEN '二等座'
+                     WHEN '1' THEN '一等座'
+                     WHEN '2' THEN '商务座'
+                     WHEN '3' THEN '硬卧'
+                     WHEN '4' THEN '软卧'
+                     ELSE '' END) AS seatType,
+            SUM(IFNULL(tc.available_seats, 0)) AS remainSeats,
+            -- 核心：按座位类型计算票价
+            CASE tc.carriage_type
+                WHEN '0' THEN (SELECT COALESCE(MAX(cumulative_mileage), 0) FROM train_schedule_station WHERE schedule_id = #{scheduleId}) * 1.0  -- 二等座1元/公里
+                WHEN '1' THEN (SELECT COALESCE(MAX(cumulative_mileage), 0) FROM train_schedule_station WHERE schedule_id = #{scheduleId}) * 1.5  -- 一等座1.5元/公里
+                ELSE 0.0  -- 其他座位类型默认0
+                END AS price
+        FROM train_carriage tc
+        WHERE tc.schedule_id = #{scheduleId}
+        GROUP BY tc.carriage_type
+    </select>
+
+    <!-- 其他查询（selectStationByScheduleId/selectScheduleIdByTrainNoAndDate/selectAllStations）不变 -->
+    <select id="selectStationByScheduleId" resultType="com.ruoyi.trainquery.domain.vo.StationVO">
+        SELECT
+            station_order AS stationOrder,
+            TRIM(station_name) AS stationName,
+            COALESCE(DATE_FORMAT(arrive_time, '%H:%i:%s'), '') AS arriveTime,
+            COALESCE(DATE_FORMAT(depart_time, '%H:%i:%s'), '') AS departTime,
+            TRIM(COALESCE(stop_duration, '')) AS stopDuration,
+            COALESCE(cumulative_mileage, 0) AS mileage
+        FROM train_schedule_station
+        WHERE schedule_id = #{scheduleId}
+        ORDER BY station_order ASC
+    </select>
+
+    <select id="selectScheduleIdByTrainNoAndDate" resultType="java.lang.Long">
+        SELECT schedule_id FROM train_schedule
+        WHERE TRIM(train_no) = TRIM(#{trainNo})
+          AND DATE_FORMAT(depart_date, '%Y-%m-%d') = TRIM(#{departDate})
+        LIMIT 1
+    </select>
+
+    <select id="selectAllStations" resultType="java.lang.String">
+        SELECT DISTINCT TRIM(station_name) FROM train_schedule_station
+        UNION
+        SELECT DISTINCT TRIM(start_station) FROM train_schedule
+        UNION
+        SELECT DISTINCT TRIM(end_station) FROM train_schedule
+        ORDER BY 1 ASC
+    </select>
+
+</mapper>
