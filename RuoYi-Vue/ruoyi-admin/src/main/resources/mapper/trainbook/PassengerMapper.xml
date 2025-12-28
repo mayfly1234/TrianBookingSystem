@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.trainbook.mapper.PassengerMapper">
+    <resultMap type="com.ruoyi.trainbook.domain.Passenger" id="PassengerResult">
+        <id     property="id"           column="id"/>
+        <result property="userId"       column="user_id"/>
+        <result property="passengerName" column="passenger_name"/>
+        <result property="idCard"       column="id_card"/>
+        <result property="phone"        column="phone"/>
+        <result property="createTime"   column="create_time"/>
+        <result property="updateTime"   column="update_time"/>
+    </resultMap>
+
+    <sql id="selectPassengerVo">
+        select id, user_id, passenger_name, id_card, phone, create_time, update_time from train_passenger
+    </sql>
+
+    <select id="selectPassengerById" parameterType="Long" resultMap="PassengerResult">
+        <include refid="selectPassengerVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectPassengerByIdCard" parameterType="String" resultMap="PassengerResult">
+        <include refid="selectPassengerVo"/>
+        where id_card = #{idCard}
+    </select>
+
+    <select id="selectPassengerList" parameterType="com.ruoyi.trainbook.domain.Passenger" resultMap="PassengerResult">
+        <include refid="selectPassengerVo"/>
+        <where>
+            <if test="userId != null">and user_id = #{userId}</if>
+            <if test="passengerName != null and passengerName != ''">and passenger_name like concat('%', #{passengerName}, '%')</if>
+            <if test="idCard != null and idCard != ''">and id_card = #{idCard}</if>
+        </where>
+    </select>
+
+    <insert id="insertPassenger" parameterType="com.ruoyi.trainbook.domain.Passenger">
+        insert into train_passenger
+            (user_id, passenger_name, id_card, phone, create_time, update_time)
+        values (#{userId}, #{passengerName}, #{idCard}, #{phone}, #{createTime}, #{updateTime})
+    </insert>
+
+    <update id="updatePassenger" parameterType="com.ruoyi.trainbook.domain.Passenger">
+        update train_passenger
+        <set>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="passengerName != null and passengerName != ''">passenger_name = #{passengerName},</if>
+            <if test="idCard != null and idCard != ''">id_card = #{idCard},</if>
+            <if test="phone != null and phone != ''">phone = #{phone},</if>
+            update_time = #{updateTime}
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="deletePassengerById" parameterType="Long">
+        delete from train_passenger where id = #{id}
+    </delete>
+
+    <delete id="deletePassengerByIds" parameterType="String">
+        delete from train_passenger where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.trainbook.mapper.TrainOrderDetailMapper">
+    <resultMap type="com.ruoyi.trainbook.domain.TrainOrderDetail" id="TrainOrderDetailResult">
+        <id     property="id"           column="id"/>
+        <result property="orderId"      column="order_id"/>
+        <result property="orderNo"      column="order_no"/>
+        <result property="passengerId"  column="passenger_id"/>
+        <result property="carriageNo"   column="carriage_no"/>
+        <result property="seatNo"       column="seat_no"/>
+        <result property="seatType"     column="seat_type"/>
+        <result property="ticketPrice"  column="ticket_price"/>
+        <result property="ticketStatus" column="ticket_status"/>
+        <result property="passengerName" column="passenger_name"/>
+        <result property="idCard"       column="id_card"/>
+        <result property="createTime"   column="create_time"/>
+        <result property="updateTime"   column="update_time"/>
+    </resultMap>
+
+    <sql id="selectTrainOrderDetailVo">
+        select id, order_id, order_no, passenger_id, carriage_no, seat_no, seat_type,
+               ticket_price, ticket_status, passenger_name, id_card, create_time, update_time
+        from train_order_detail
+    </sql>
+
+    <select id="selectTrainOrderDetailById" parameterType="Long" resultMap="TrainOrderDetailResult">
+        <include refid="selectTrainOrderDetailVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectTrainOrderDetailList" parameterType="com.ruoyi.trainbook.domain.TrainOrderDetail" resultMap="TrainOrderDetailResult">
+        <include refid="selectTrainOrderDetailVo"/>
+        <where>
+            <if test="orderId != null">and order_id = #{orderId}</if>
+            <if test="orderNo != null and orderNo != ''">and order_no = #{orderNo}</if>
+            <if test="passengerId != null">and passenger_id = #{passengerId}</if>
+            <if test="ticketStatus != null and ticketStatus != ''">and ticket_status = #{ticketStatus}</if>
+        </where>
+    </select>
+
+    <insert id="insertTrainOrderDetail" parameterType="com.ruoyi.trainbook.domain.TrainOrderDetail">
+        insert into train_order_detail
+        (order_id, order_no, passenger_id, carriage_no, seat_no, seat_type, ticket_price,
+         ticket_status, passenger_name, id_card, create_time, update_time)
+        values (#{orderId}, #{orderNo}, #{passengerId}, #{carriageNo}, #{seatNo}, #{seatType}, #{ticketPrice},
+                #{ticketStatus}, #{passengerName}, #{idCard}, #{createTime}, #{updateTime})
+    </insert>
+
+    <update id="updateTrainOrderDetail" parameterType="com.ruoyi.trainbook.domain.TrainOrderDetail">
+        update train_order_detail
+        <set>
+            <if test="orderId != null">order_id = #{orderId},</if>
+            <if test="orderNo != null and orderNo != ''">order_no = #{orderNo},</if>
+            <if test="passengerId != null">passenger_id = #{passengerId},</if>
+            <if test="carriageNo != null and carriageNo != ''">carriage_no = #{carriageNo},</if>
+            <if test="seatNo != null and seatNo != ''">seat_no = #{seatNo},</if>
+            <if test="seatType != null and seatType != ''">seat_type = #{seatType},</if>
+            <if test="ticketPrice != null">ticket_price = #{ticketPrice},</if>
+            <if test="ticketStatus != null and ticketStatus != ''">ticket_status = #{ticketStatus},</if>
+            <if test="passengerName != null and passengerName != ''">passenger_name = #{passengerName},</if>
+            <if test="idCard != null and idCard != ''">id_card = #{idCard},</if>
+            update_time = #{updateTime}
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteTrainOrderDetailById" parameterType="Long">
+        delete from train_order_detail where id = #{id}
+    </delete>
+
+    <delete id="deleteTrainOrderDetailByIds" parameterType="String">
+        delete from train_order_detail where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
