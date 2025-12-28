@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.train.station.mapper.TrainScheduleStationMapper">
+    
+    <resultMap type="TrainScheduleStation" id="TrainScheduleStationResult">
+        <result property="stationId"    column="station_id"    />
+        <result property="scheduleId"    column="schedule_id"    />
+        <result property="stationName"    column="station_name"    />
+        <result property="stationOrder"    column="station_order"    />
+        <result property="arriveTime"    column="arrive_time"    />
+        <result property="departTime"    column="depart_time"    />
+        <result property="platformNo"    column="platform_no"    />
+        <result property="stopDuration"    column="stop_duration"    />
+        <result property="cumulativeMileage"    column="cumulative_mileage"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectTrainScheduleStationVo">
+        select station_id, schedule_id, station_name, station_order, arrive_time, depart_time, platform_no, stop_duration, cumulative_mileage, create_by, create_time, update_by, update_time, remark from train_schedule_station
+    </sql>
+
+    <select id="selectTrainScheduleStationList" parameterType="TrainScheduleStation" resultMap="TrainScheduleStationResult">
+        <include refid="selectTrainScheduleStationVo"/>
+        <where>  
+            <if test="scheduleId != null "> and schedule_id = #{scheduleId}</if>
+            <if test="stationName != null  and stationName != ''"> and station_name like concat('%', #{stationName}, '%')</if>
+            <if test="stationOrder != null "> and station_order = #{stationOrder}</if>
+            <if test="arriveTime != null "> and arrive_time = #{arriveTime}</if>
+            <if test="departTime != null "> and depart_time = #{departTime}</if>
+            <if test="platformNo != null  and platformNo != ''"> and platform_no = #{platformNo}</if>
+            <if test="stopDuration != null  and stopDuration != ''"> and stop_duration = #{stopDuration}</if>
+            <if test="cumulativeMileage != null "> and cumulative_mileage = #{cumulativeMileage}</if>
+        </where>
+    </select>
+    
+    <select id="selectTrainScheduleStationByStationId" parameterType="Long" resultMap="TrainScheduleStationResult">
+        <include refid="selectTrainScheduleStationVo"/>
+        where station_id = #{stationId}
+    </select>
+
+    <insert id="insertTrainScheduleStation" parameterType="TrainScheduleStation" useGeneratedKeys="true" keyProperty="stationId">
+        insert into train_schedule_station
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="scheduleId != null">schedule_id,</if>
+            <if test="stationName != null and stationName != ''">station_name,</if>
+            <if test="stationOrder != null">station_order,</if>
+            <if test="arriveTime != null">arrive_time,</if>
+            <if test="departTime != null">depart_time,</if>
+            <if test="platformNo != null">platform_no,</if>
+            <if test="stopDuration != null">stop_duration,</if>
+            <if test="cumulativeMileage != null">cumulative_mileage,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="scheduleId != null">#{scheduleId},</if>
+            <if test="stationName != null and stationName != ''">#{stationName},</if>
+            <if test="stationOrder != null">#{stationOrder},</if>
+            <if test="arriveTime != null">#{arriveTime},</if>
+            <if test="departTime != null">#{departTime},</if>
+            <if test="platformNo != null">#{platformNo},</if>
+            <if test="stopDuration != null">#{stopDuration},</if>
+            <if test="cumulativeMileage != null">#{cumulativeMileage},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateTrainScheduleStation" parameterType="TrainScheduleStation">
+        update train_schedule_station
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="scheduleId != null">schedule_id = #{scheduleId},</if>
+            <if test="stationName != null and stationName != ''">station_name = #{stationName},</if>
+            <if test="stationOrder != null">station_order = #{stationOrder},</if>
+            <if test="arriveTime != null">arrive_time = #{arriveTime},</if>
+            <if test="departTime != null">depart_time = #{departTime},</if>
+            <if test="platformNo != null">platform_no = #{platformNo},</if>
+            <if test="stopDuration != null">stop_duration = #{stopDuration},</if>
+            <if test="cumulativeMileage != null">cumulative_mileage = #{cumulativeMileage},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where station_id = #{stationId}
+    </update>
+
+    <delete id="deleteTrainScheduleStationByStationId" parameterType="Long">
+        delete from train_schedule_station where station_id = #{stationId}
+    </delete>
+
+    <delete id="deleteTrainScheduleStationByStationIds" parameterType="String">
+        delete from train_schedule_station where station_id in 
+        <foreach item="stationId" collection="array" open="(" separator="," close=")">
+            #{stationId}
+        </foreach>
+    </delete>
+</mapper>

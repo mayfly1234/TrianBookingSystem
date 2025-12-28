@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.train.seat.mapper.TrainSeatMapper">
+    
+    <resultMap type="TrainSeat" id="TrainSeatResult">
+        <result property="seatId"    column="seat_id"    />
+        <result property="carriageId"    column="carriage_id"    />
+        <result property="seatNo"    column="seat_no"    />
+        <result property="seatType"    column="seat_type"    />
+        <result property="seatStatus"    column="seat_status"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectTrainSeatVo">
+        select seat_id, carriage_id, seat_no, seat_type, seat_status, create_by, create_time, update_by, update_time, remark from train_seat
+    </sql>
+
+    <select id="selectTrainSeatList" parameterType="TrainSeat" resultMap="TrainSeatResult">
+        <include refid="selectTrainSeatVo"/>
+        <where>  
+            <if test="carriageId != null "> and carriage_id = #{carriageId}</if>
+            <if test="seatNo != null  and seatNo != ''"> and seat_no = #{seatNo}</if>
+            <if test="seatType != null  and seatType != ''"> and seat_type = #{seatType}</if>
+            <if test="seatStatus != null  and seatStatus != ''"> and seat_status = #{seatStatus}</if>
+        </where>
+    </select>
+    
+    <select id="selectTrainSeatBySeatId" parameterType="Long" resultMap="TrainSeatResult">
+        <include refid="selectTrainSeatVo"/>
+        where seat_id = #{seatId}
+    </select>
+
+    <insert id="insertTrainSeat" parameterType="TrainSeat" useGeneratedKeys="true" keyProperty="seatId">
+        insert into train_seat
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="carriageId != null">carriage_id,</if>
+            <if test="seatNo != null and seatNo != ''">seat_no,</if>
+            <if test="seatType != null and seatType != ''">seat_type,</if>
+            <if test="seatStatus != null and seatStatus != ''">seat_status,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="carriageId != null">#{carriageId},</if>
+            <if test="seatNo != null and seatNo != ''">#{seatNo},</if>
+            <if test="seatType != null and seatType != ''">#{seatType},</if>
+            <if test="seatStatus != null and seatStatus != ''">#{seatStatus},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateTrainSeat" parameterType="TrainSeat">
+        update train_seat
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="carriageId != null">carriage_id = #{carriageId},</if>
+            <if test="seatNo != null and seatNo != ''">seat_no = #{seatNo},</if>
+            <if test="seatType != null and seatType != ''">seat_type = #{seatType},</if>
+            <if test="seatStatus != null and seatStatus != ''">seat_status = #{seatStatus},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where seat_id = #{seatId}
+    </update>
+
+    <delete id="deleteTrainSeatBySeatId" parameterType="Long">
+        delete from train_seat where seat_id = #{seatId}
+    </delete>
+
+    <delete id="deleteTrainSeatBySeatIds" parameterType="String">
+        delete from train_seat where seat_id in 
+        <foreach item="seatId" collection="array" open="(" separator="," close=")">
+            #{seatId}
+        </foreach>
+    </delete>
+</mapper>

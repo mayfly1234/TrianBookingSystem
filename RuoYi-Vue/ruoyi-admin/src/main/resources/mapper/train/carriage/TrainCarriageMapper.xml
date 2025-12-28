@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.train.carriage.mapper.TrainCarriageMapper">
+    
+    <resultMap type="TrainCarriage" id="TrainCarriageResult">
+        <result property="carriageId"    column="carriage_id"    />
+        <result property="scheduleId"    column="schedule_id"    />
+        <result property="carriageNo"    column="carriage_no"    />
+        <result property="carriageType"    column="carriage_type"    />
+        <result property="totalSeats"    column="total_seats"    />
+        <result property="availableSeats"    column="available_seats"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectTrainCarriageVo">
+        select carriage_id, schedule_id, carriage_no, carriage_type, total_seats, available_seats, create_by, create_time, update_by, update_time, remark from train_carriage
+    </sql>
+
+    <select id="selectTrainCarriageList" parameterType="TrainCarriage" resultMap="TrainCarriageResult">
+        <include refid="selectTrainCarriageVo"/>
+        <where>  
+            <if test="scheduleId != null "> and schedule_id = #{scheduleId}</if>
+            <if test="carriageNo != null  and carriageNo != ''"> and carriage_no = #{carriageNo}</if>
+            <if test="carriageType != null  and carriageType != ''"> and carriage_type = #{carriageType}</if>
+            <if test="totalSeats != null "> and total_seats = #{totalSeats}</if>
+            <if test="availableSeats != null "> and available_seats = #{availableSeats}</if>
+        </where>
+    </select>
+    
+    <select id="selectTrainCarriageByCarriageId" parameterType="Long" resultMap="TrainCarriageResult">
+        <include refid="selectTrainCarriageVo"/>
+        where carriage_id = #{carriageId}
+    </select>
+
+    <insert id="insertTrainCarriage" parameterType="TrainCarriage" useGeneratedKeys="true" keyProperty="carriageId">
+        insert into train_carriage
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="scheduleId != null">schedule_id,</if>
+            <if test="carriageNo != null and carriageNo != ''">carriage_no,</if>
+            <if test="carriageType != null and carriageType != ''">carriage_type,</if>
+            <if test="totalSeats != null">total_seats,</if>
+            <if test="availableSeats != null">available_seats,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="scheduleId != null">#{scheduleId},</if>
+            <if test="carriageNo != null and carriageNo != ''">#{carriageNo},</if>
+            <if test="carriageType != null and carriageType != ''">#{carriageType},</if>
+            <if test="totalSeats != null">#{totalSeats},</if>
+            <if test="availableSeats != null">#{availableSeats},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateTrainCarriage" parameterType="TrainCarriage">
+        update train_carriage
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="scheduleId != null">schedule_id = #{scheduleId},</if>
+            <if test="carriageNo != null and carriageNo != ''">carriage_no = #{carriageNo},</if>
+            <if test="carriageType != null and carriageType != ''">carriage_type = #{carriageType},</if>
+            <if test="totalSeats != null">total_seats = #{totalSeats},</if>
+            <if test="availableSeats != null">available_seats = #{availableSeats},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where carriage_id = #{carriageId}
+    </update>
+
+    <delete id="deleteTrainCarriageByCarriageId" parameterType="Long">
+        delete from train_carriage where carriage_id = #{carriageId}
+    </delete>
+
+    <delete id="deleteTrainCarriageByCarriageIds" parameterType="String">
+        delete from train_carriage where carriage_id in 
+        <foreach item="carriageId" collection="array" open="(" separator="," close=")">
+            #{carriageId}
+        </foreach>
+    </delete>
+</mapper>
