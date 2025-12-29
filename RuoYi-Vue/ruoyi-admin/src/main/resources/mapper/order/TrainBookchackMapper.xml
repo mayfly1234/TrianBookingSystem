@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.order.mapper.TrainBookchackMapper">
+    
+    <resultMap type="TrainBookchack" id="TrainBookchackResult">
+        <result property="id"    column="id"    />
+        <result property="orderNo"    column="order_no"    />
+        <result property="trainNo"    column="train_no"    />
+        <result property="scheduleId"    column="schedule_id"    />
+        <result property="startStation"    column="start_station"    />
+        <result property="endStation"    column="end_station"    />
+        <result property="departDate"    column="depart_date"    />
+        <result property="passengerName"    column="passenger_name"    />
+        <result property="idCard"    column="id_card"    />
+        <result property="phone"    column="phone"    />
+        <result property="carriageNo"    column="carriage_no"    />
+        <result property="seatNo"    column="seat_no"    />
+        <result property="seatType"    column="seat_type"    />
+        <result property="ticketPrice"    column="ticket_price"    />
+        <result property="createTime"    column="create_time"    />
+    </resultMap>
+
+    <sql id="selectTrainBookchackVo">
+        select id, order_no, train_no, schedule_id, start_station, end_station, depart_date, passenger_name, id_card, phone, carriage_no, seat_no, seat_type, ticket_price, create_time from train_book
+    </sql>
+
+    <select id="selectTrainBookchackList" parameterType="TrainBookchack" resultMap="TrainBookchackResult">
+        <include refid="selectTrainBookchackVo"/>
+        <where>  
+            <if test="orderNo != null  and orderNo != ''"> and order_no = #{orderNo}</if>
+            <if test="trainNo != null  and trainNo != ''"> and train_no = #{trainNo}</if>
+            <if test="scheduleId != null "> and schedule_id = #{scheduleId}</if>
+            <if test="startStation != null  and startStation != ''"> and start_station = #{startStation}</if>
+            <if test="endStation != null  and endStation != ''"> and end_station = #{endStation}</if>
+            <if test="departDate != null "> and depart_date = #{departDate}</if>
+            <if test="passengerName != null  and passengerName != ''"> and passenger_name like concat('%', #{passengerName}, '%')</if>
+            <if test="idCard != null  and idCard != ''"> and id_card = #{idCard}</if>
+            <if test="phone != null  and phone != ''"> and phone = #{phone}</if>
+            <if test="carriageNo != null  and carriageNo != ''"> and carriage_no = #{carriageNo}</if>
+            <if test="seatNo != null  and seatNo != ''"> and seat_no = #{seatNo}</if>
+            <if test="seatType != null  and seatType != ''"> and seat_type = #{seatType}</if>
+            <if test="ticketPrice != null "> and ticket_price = #{ticketPrice}</if>
+        </where>
+    </select>
+    
+    <select id="selectTrainBookchackById" parameterType="Long" resultMap="TrainBookchackResult">
+        <include refid="selectTrainBookchackVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertTrainBookchack" parameterType="TrainBookchack" useGeneratedKeys="true" keyProperty="id">
+        insert into train_book
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="orderNo != null and orderNo != ''">order_no,</if>
+            <if test="trainNo != null and trainNo != ''">train_no,</if>
+            <if test="scheduleId != null">schedule_id,</if>
+            <if test="startStation != null">start_station,</if>
+            <if test="endStation != null">end_station,</if>
+            <if test="departDate != null">depart_date,</if>
+            <if test="passengerName != null and passengerName != ''">passenger_name,</if>
+            <if test="idCard != null and idCard != ''">id_card,</if>
+            <if test="phone != null">phone,</if>
+            <if test="carriageNo != null">carriage_no,</if>
+            <if test="seatNo != null">seat_no,</if>
+            <if test="seatType != null">seat_type,</if>
+            <if test="ticketPrice != null">ticket_price,</if>
+            <if test="createTime != null">create_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="orderNo != null and orderNo != ''">#{orderNo},</if>
+            <if test="trainNo != null and trainNo != ''">#{trainNo},</if>
+            <if test="scheduleId != null">#{scheduleId},</if>
+            <if test="startStation != null">#{startStation},</if>
+            <if test="endStation != null">#{endStation},</if>
+            <if test="departDate != null">#{departDate},</if>
+            <if test="passengerName != null and passengerName != ''">#{passengerName},</if>
+            <if test="idCard != null and idCard != ''">#{idCard},</if>
+            <if test="phone != null">#{phone},</if>
+            <if test="carriageNo != null">#{carriageNo},</if>
+            <if test="seatNo != null">#{seatNo},</if>
+            <if test="seatType != null">#{seatType},</if>
+            <if test="ticketPrice != null">#{ticketPrice},</if>
+            <if test="createTime != null">#{createTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateTrainBookchack" parameterType="TrainBookchack">
+        update train_book
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="orderNo != null and orderNo != ''">order_no = #{orderNo},</if>
+            <if test="trainNo != null and trainNo != ''">train_no = #{trainNo},</if>
+            <if test="scheduleId != null">schedule_id = #{scheduleId},</if>
+            <if test="startStation != null">start_station = #{startStation},</if>
+            <if test="endStation != null">end_station = #{endStation},</if>
+            <if test="departDate != null">depart_date = #{departDate},</if>
+            <if test="passengerName != null and passengerName != ''">passenger_name = #{passengerName},</if>
+            <if test="idCard != null and idCard != ''">id_card = #{idCard},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="carriageNo != null">carriage_no = #{carriageNo},</if>
+            <if test="seatNo != null">seat_no = #{seatNo},</if>
+            <if test="seatType != null">seat_type = #{seatType},</if>
+            <if test="ticketPrice != null">ticket_price = #{ticketPrice},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteTrainBookchackById" parameterType="Long">
+        delete from train_book where id = #{id}
+    </delete>
+
+    <delete id="deleteTrainBookchackByIds" parameterType="String">
+        delete from train_book where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
