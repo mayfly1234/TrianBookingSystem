@@ -20,12 +20,15 @@ public class TrainOneKeyQueryServiceImpl implements ITrainOneKeyQueryService {
 
     @Override
     public List<TrainOneKeyVO> queryTrain(String startStation, String endStation, String departDate) {
-        // 1. 查车次基础信息
+        // 1. 查车次基础信息（XML已查询schedule_id，自动映射到VO的scheduleId，但兜底赋值更稳妥）
         List<TrainOneKeyVO> voList = trainOneKeyQueryMapper.selectTrainByCondition(startStation, endStation, departDate);
         // 2. 补充座位和站点
         for (TrainOneKeyVO vo : voList) {
             Long scheduleId = trainOneKeyQueryMapper.selectScheduleIdByTrainNoAndDate(vo.getTrainNo(), departDate);
             if (scheduleId != null) {
+                // ========== 新增：将scheduleId赋值到VO中（核心！确保前端能拿到） ==========
+                vo.setScheduleId(scheduleId);
+
                 List<SeatVO> seatList = trainOneKeyQueryMapper.selectSeatByScheduleId(scheduleId);
                 vo.setSeatList(seatList);
                 List<StationVO> stationList = trainOneKeyQueryMapper.selectStationByScheduleId(scheduleId);

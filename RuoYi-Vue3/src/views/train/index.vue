@@ -163,12 +163,12 @@
           <el-input v-model="bookForm.ticketPrice" disabled />
         </el-form-item>
 
-        <!-- 提交按钮：修复禁用条件，新增scheduleId校验 -->
+        <!-- 提交按钮：修复禁用条件，精准校验scheduleId空值 -->
         <el-form-item style="margin-left: 100px">
           <el-button 
             type="primary" 
             @click="handleSubmit"
-            :disabled="!selectedTrain || !bookForm.ticketPrice || bookForm.ticketPrice === '' || !bookForm.scheduleId"
+            :disabled="!selectedTrain || !bookForm.ticketPrice || bookForm.ticketPrice === '' || bookForm.scheduleId === '' || bookForm.scheduleId === undefined || bookForm.scheduleId === null"
             :loading="submitLoading"
           >
             提交订票
@@ -183,7 +183,7 @@
 <script setup>
 import { ref, reactive, watch, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-// 引入正确的车次查询/站点API（和能正常显示票价的组件一致）
+// 引入正确的车次查询/站点API
 import { queryTrain, getAllStations } from '@/api/trainquery/onekey'
 // 订票提交API
 import { submitBookInfo } from '@/api/train'
@@ -279,18 +279,20 @@ const disabledPastDate = (time) => {
   return time.getTime() < Date.now() - 8.64e7 // 8.64e7 = 24*60*60*1000（一天毫秒数）
 }
 
-// 获取座位信息（修复：解析JSON字符串，兼容后端返回格式）
+// 获取座位信息（增强：空值兜底，兼容JSON字符串/数组）
 const getSeatInfo = (row, type) => {
   if (!row || !row.seatList) return null
-  // 解析后端返回的JSON字符串为数组
   let seatList = []
   try {
-    seatList = typeof row.seatList === 'string' ? JSON.parse(row.seatList) : row.seatList
+    // 兜底：空字符串/非JSON字符串直接返回空数组
+    seatList = typeof row.seatList === 'string' && row.seatList.trim() 
+      ? JSON.parse(row.seatList) 
+      : (Array.isArray(row.seatList) ? row.seatList : [])
   } catch (e) {
     console.error('【解析座位信息失败】：', e, '原始数据：', row.seatList)
     return null
   }
-  return seatList.find(item => item.seatType === type)
+  return seatList.find(item => item?.seatType === type)
 }
 
 // 更新票价（核心：从后端seatList读取，避免空值）
@@ -394,9 +396,9 @@ const chooseTrain = (row) => {
   // 填充基础信息，兜底空值
   bookForm.trainNo = row.trainNo || ''
   
-  // 核心修复：兼容驼峰/下划线字段 + 仅过滤null/undefined（不过滤数字0）
-  const scheduleId = row.scheduleId ?? row.schedule_id ?? ''
-  bookForm.scheduleId = scheduleId === null || scheduleId === undefined ? '' : String(scheduleId)
+  // 核心修复：兼容驼峰/下划线字段 + 兜底空值（排除null/undefined）
+  bookForm.scheduleId = String(row.scheduleId || row.schedule_id || '')
+  bookForm.scheduleId = bookForm.scheduleId === 'null' || bookForm.scheduleId === 'undefined' ? '' : bookForm.scheduleId
   
   bookForm.startStation = row.startStation || ''
   bookForm.endStation = row.endStation || ''
@@ -407,40 +409,43 @@ const chooseTrain = (row) => {
   bookForm.seatType = '二等座'
   updateTicketPrice()
 
-  // 优化提示：明确说明ID异常原因
+  // 优化提示：支持HTML换行
   if (!bookForm.scheduleId) {
-    ElMessage.warning('⚠️ 车次ID为空！可能原因：\n1. 后端未返回scheduleId/schedule_id字段\n2. 字段值为null/undefined')
+    ElMessage.warning({
+      message: '⚠️ 车次ID为空！可能原因：<br/>1. 后端未返回scheduleId/schedule_id字段<br/>2. 字段值为null/undefined',
+      dangerouslyUseHTMLString: true
+    })
   } else {
     ElMessage.success(`已选择车次：${row.trainNo || '未知'}（ID：${bookForm.scheduleId}）`)
   }
 }
 
-// 重置订票表单（修复：scheduleId赋值逻辑）
+// 重置订票表单（修复：先清空字段，再清除校验状态）
 const resetBookForm = () => {
+  // 1. 手动清空表单字段
+  bookForm.trainNo = ''
+  bookForm.scheduleId = ''
+  bookForm.route = ''
+  bookForm.passengerName = ''
+  bookForm.idCard = ''
+  bookForm.phone = ''
+  bookForm.carriageNo = ''
+  bookForm.seatNo = ''
+  bookForm.seatType = ''
+  bookForm.ticketPrice = ''
+  bookForm.startStation = ''
+  bookForm.endStation = ''
+  bookForm.departDate = ''
+  
+  // 2. 清除表单校验状态（仅清除提示，不覆盖字段）
   if (bookFormRef.value) {
-    bookFormRef.value.resetFields()
+    bookFormRef.value.clearValidate()
   }
-  
-  // 保留车次基础信息（兜底空值）
-  bookForm.trainNo = selectedTrain.value?.trainNo || ''
-  
-  // 修复：兼容驼峰/下划线字段 + 不过滤数字0
-  const scheduleId = selectedTrain.value?.scheduleId ?? selectedTrain.value?.schedule_id ?? ''
-  bookForm.scheduleId = scheduleId === null || scheduleId === undefined ? '' : String(scheduleId)
-  
-  bookForm.route = selectedTrain.value ? `${selectedTrain.value.startStation || ''} → ${selectedTrain.value.endStation || ''} ${selectedTrain.value.departDate || ''}` : ''
-  bookForm.startStation = selectedTrain.value?.startStation || ''
-  bookForm.endStation = selectedTrain.value?.endStation || ''
-  bookForm.departDate = selectedTrain.value?.departDate || ''
-  
-  // 重置座位和票价
-  bookForm.seatType = '二等座'
-  updateTicketPrice()
   
   ElMessage.info('订票表单已重置')
 }
 
-// 处理订票提交（核心修复：精准校验scheduleId）
+// 处理订票提交（核心修复：扁平数据结构 + 精准校验）
 const handleSubmit = async () => {
   if (!bookFormRef.value) return
   submitLoading.value = true
@@ -449,7 +454,7 @@ const handleSubmit = async () => {
     // 1. 表单基础校验
     await bookFormRef.value.validate()
     
-    // 2. 核心兜底校验（避免空字符串提交）
+    // 2. 核心兜底校验
     if (!selectedTrain.value) {
       throw new Error('请先选择有效车次！')
     }
@@ -457,6 +462,12 @@ const handleSubmit = async () => {
     // 精准校验：排除空字符串、'undefined'、'null'
     if (['', 'undefined', 'null'].includes(bookForm.scheduleId)) {
       throw new Error('车次ID为空/无效！请重新选择车次（或联系后端检查接口返回）')
+    }
+    
+    // 校验scheduleId是否为有效数字
+    const scheduleIdNum = Number(bookForm.scheduleId)
+    if (isNaN(scheduleIdNum) || scheduleIdNum <= 0) {
+      throw new Error(`车次ID格式错误：${bookForm.scheduleId}（必须是大于0的数字）`)
     }
     
     if (!bookForm.ticketPrice || bookForm.ticketPrice === '') {
@@ -480,26 +491,20 @@ const handleSubmit = async () => {
       }
     )
     
-    // 4. 组装提交数据（确保字段类型正确，兜底空值）
+    // 4. 组装扁平结构的提交数据（匹配后端VO）
     const submitData = {
-      passenger: {
-        passengerName: bookForm.passengerName || '',
-        idCard: bookForm.idCard || '',
-        phone: bookForm.phone || ''
-      },
-      order: {
-        trainNo: bookForm.trainNo || '',
-        // scheduleId转字符串/数字（根据后端要求，这里转字符串兜底）
-        scheduleId: bookForm.scheduleId || '',
-        startStation: bookForm.startStation || '',
-        endStation: bookForm.endStation || '',
-        departDate: bookForm.departDate || '',
-        carriageNo: bookForm.carriageNo || '',
-        seatNo: bookForm.seatNo || '',
-        seatType: bookForm.seatType || '',
-        // 票价转为数字（后端期望数字类型，避免空字符串）
-        ticketPrice: priceNum
-      }
+      scheduleId: scheduleIdNum, // 转数字（后端Long类型）
+      trainNo: bookForm.trainNo || '',
+      startStation: bookForm.startStation || '',
+      endStation: bookForm.endStation || '',
+      departDate: bookForm.departDate || '',
+      passengerName: bookForm.passengerName || '',
+      idCard: bookForm.idCard || '',
+      phone: bookForm.phone || '',
+      carriageNo: bookForm.carriageNo || '',
+      seatNo: bookForm.seatNo || '',
+      seatType: bookForm.seatType || '',
+      ticketPrice: priceNum // 数字类型（后端BigDecimal）
     }
 
     // 调试：打印提交数据（方便排查）

@@ -1,4 +1,6 @@
 import request from '@/utils/request'
+// 新增：引入消息提示（若依前端内置）
+import { ElMessage } from 'element-plus'
 
 /**
  * 车次查询接口（一站式查询）
@@ -14,10 +16,14 @@ export function queryTrainList(params) {
     url: '/trainquery/onekey/query',
     method: 'get',
     params: params,
-    // 强制序列化参数，避免日期/空值问题
     paramsSerializer: function (params) {
       return new URLSearchParams(params).toString()
     }
+  }).catch(err => {
+    // 统一捕获查询失败异常
+    ElMessage.error('车次查询失败：' + (err.msg || '网络异常'))
+    // 抛出异常，让调用方可以继续处理
+    return Promise.reject(err)
   })
 }
 
@@ -28,9 +34,21 @@ export function queryTrainList(params) {
  */
 export function submitBookInfo(data) {
   console.log('【提交订票】请求数据：', data) // 调试日志
+  // 新增：数据格式校验（前端提前拦截错误，减少后端请求）
+  const requiredFields = ['scheduleId', 'trainNo', 'startStation', 'endStation', 'departDate', 'passengerName', 'idCard', 'phone', 'carriageNo', 'seatNo', 'seatType', 'ticketPrice']
+  const missingFields = requiredFields.filter(field => !data[field])
+  if (missingFields.length > 0) {
+    ElMessage.error(`订票失败：缺少必填字段 - ${missingFields.join(', ')}`)
+    return Promise.reject(new Error(`缺少必填字段：${missingFields.join(', ')}`))
+  }
+
   return request({
     url: '/trainbook/simple/submit',
     method: 'post',
     data: data
+  }).catch(err => {
+    // 统一捕获订票失败异常（优先显示后端返回的错误信息）
+    ElMessage.error('订票失败：' + (err.msg || err.message || '网络异常'))
+    return Promise.reject(err)
   })
 }

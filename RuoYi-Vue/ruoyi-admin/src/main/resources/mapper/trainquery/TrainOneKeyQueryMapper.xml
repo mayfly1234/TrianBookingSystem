@@ -3,9 +3,10 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.trainquery.mapper.TrainOneKeyQueryMapper">
 
-    <!-- 1. 车次查询：新增总里程totalMileage字段 -->
+    <!-- 1. 车次查询：新增scheduleId + 保留原有总里程totalMileage字段 -->
     <select id="selectTrainByCondition" resultType="com.ruoyi.trainquery.domain.vo.TrainOneKeyVO">
         SELECT
+        ts.schedule_id AS scheduleId,  <!-- 新增：查询车次ID，映射到VO的scheduleId字段 -->
         TRIM(COALESCE(tb.train_no, ts.train_no)) AS trainNo,
         TRIM(CASE COALESCE(tb.train_type, '99')
         WHEN '0' THEN '高铁' WHEN '1' THEN '动车' WHEN '2' THEN '普快' ELSE '其他' END) AS trainType,
@@ -22,7 +23,7 @@
         FROM train_schedule_station
         WHERE schedule_id = ts.schedule_id)), '') AS arriveTime,
         TRIM(COALESCE(ts.total_duration, '')) AS totalDuration,
-        -- 新增：查询该车次的总里程（终点站的累计里程）
+        -- 原有：查询该车次的总里程（终点站的累计里程）
         (SELECT COALESCE(MAX(cumulative_mileage), 0)
         FROM train_schedule_station
         WHERE schedule_id = ts.schedule_id) AS totalMileage
@@ -41,7 +42,7 @@
         ORDER BY ts.depart_date ASC, startTime ASC
     </select>
 
-    <!-- 2. 座位查询：新增票价计算（总里程×系数） -->
+    <!-- 2. 座位查询：原有逻辑完全保留（无需修改） -->
     <select id="selectSeatByScheduleId" resultType="com.ruoyi.trainquery.domain.vo.SeatVO">
         -- 先查询该车次的总里程
         SELECT
@@ -64,7 +65,7 @@
         GROUP BY tc.carriage_type
     </select>
 
-    <!-- 其他查询（selectStationByScheduleId/selectScheduleIdByTrainNoAndDate/selectAllStations）不变 -->
+    <!-- 其他查询（selectStationByScheduleId/selectScheduleIdByTrainNoAndDate/selectAllStations）完全保留（无需修改） -->
     <select id="selectStationByScheduleId" resultType="com.ruoyi.trainquery.domain.vo.StationVO">
         SELECT
             station_order AS stationOrder,

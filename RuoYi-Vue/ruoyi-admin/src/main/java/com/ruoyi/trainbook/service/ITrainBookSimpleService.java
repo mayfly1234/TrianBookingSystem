@@ -1,20 +1,21 @@
 package com.ruoyi.trainbook.service;
 
+import com.ruoyi.trainbook.domain.vo.TrainBookSubmitVO;
+
 import java.util.Map;
 
 /**
- * 极简订票服务接口
+ * 火车订票Service接口
  *
  * @author ruoyi
  */
-public interface ITrainBookSimpleService
-{
+public interface ITrainBookSimpleService {
     /**
-     * 提交订票信息（乘客+订单入库）
+     * 提交订票信息
      *
-     * @param submitData 提交数据
-     * @param userId 当前登录用户ID
+     * @param submitVO 前端提交参数
+     * @param userId   登录用户ID
      * @return 订单信息（含订单号）
      */
-    public Map<String, Object> submitBook(Map<String, Object> submitData, Long userId);
+    Map<String, Object> submitBook(TrainBookSubmitVO submitVO, Long userId);
 }
